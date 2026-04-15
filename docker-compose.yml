@@ -1,0 +1,39 @@
+services:
+  redis-cache:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  metricas:
+    build: ./metricas
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./metricas:/app
+
+  generador_respuestas:
+    build: ./generador_respuestas
+    ports:
+      - "8002:8000"
+    depends_on:
+      - metricas
+
+  cache_system:
+    build: ./cache_system
+    ports:
+      - "8003:8000"
+    depends_on:
+      - redis-cache
+      - generador_respuestas
+      - metricas
+    environment:
+      - REDIS_HOST=redis-cache
+      - RESPUESTAS_URL=http://generador_respuestas:8000
+      - METRICAS_URL=http://metricas:8000
+
+  generador_trafico:
+    build: ./generador_trafico
+    depends_on:
+      - cache_system
+    environment:
+      - CACHE_URL=http://cache_system:8000

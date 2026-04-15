@@ -1,0 +1,12 @@
+# Ignorar datos empíricos y gráficos generados
+*.csv
+*.png
+
+# Ignorar archivos basura de Python
+__pycache__/
+*.pyc
+
+# Variables de entorno e IDEs
+.env
+.vscode/
+
