@@ -1,0 +1,65 @@
+# Tarea 1 - Sistemas Distribuidos
+Plataforma de analisis de preguntas y respuestas en Internet
+
+## Integrantes
+- Benjamin Arango - benjamin.arango@mail.udp.cl [cite: 2]
+- Jeremias Olivares - jeremias.olivares@mail.udp.cl [cite: 2]
+
+## Descripcion
+Este sistema distribuido de cache optimiza el acceso a datos del dataset Google Open Buildings para la Region Metropolitana de Santiago[cite: 10, 11]. Implementa cinco tipos de consultas geoespaciales (Q1-Q5) utilizando microservicios en Docker y una capa de persistencia volatil basada en Redis[cite: 12, 13, 14]. El sistema permite evaluar el rendimiento bajo distribuciones de trafico Zipf y Uniforme, probando politicas de eviccion LRU y LFU con distintos limites de memoria[cite: 20, 23, 81, 82].
+
+## Arquitectura
+El sistema consta de cinco modulos independientes comunicados por una red interna de Docker[cite: 18, 39]:
+- redis-cache (Puerto 6379): Instancia de Redis para gestion de cache y politicas de desalojo[cite: 72].
+- metricas (Puerto 8001): Servicio para el registro y persistencia de eventos (hits, misses, latencias)[cite: 27, 73].
+- generador_respuestas (Puerto 8002): Motor de computo que procesa los datos del dataset cargados en memoria[cite: 25, 74].
+- cache_system (Puerto 8003): Intercepta solicitudes, gestiona la logica de hit/miss y se comunica con Redis[cite: 22, 75].
+- generador_trafico: Simula la carga de trabajo emitiendo consultas sinteticas con distribuciones estadisticas[cite: 19, 78].
+
+## Requisitos
+- Docker y Docker Compose [cite: 12, 44]
+- Python 3.10 o superior (para ejecucion de scripts de analisis) [cite: 46]
+- Dataset Google Open Buildings (archivo 967_buildings.csv.gz) [cite: 11]
+
+## Instalacion y Configuracion
+1. Clonar el repositorio:
+   git clone https://github.com/Lacramin/sistemas.git
+   cd sistemas
+
+2. Preparar el dataset:
+   Colocar el archivo 967_buildings.csv.gz dentro de la carpeta generador_respuestas/.
+
+3. Despliegue inicial:
+   docker compose up -d --build
+
+## Ejecucion de Experimentos
+Para replicar los 20 experimentos descritos en el informe:
+1. Otorgar permisos al script:
+   chmod +x run_experiments.sh
+2. Ejecutar la automatizacion:
+   ./run_experiments.sh
+
+El script ejecutara pruebas variando la distribucion (Zipf/Uniforme), la politica (LRU/LFU) y la memoria (10MB, 25MB, 50MB, 200MB, 500MB)[cite: 81, 82, 83]. Cada experimento realiza 6.000 consultas con un tiempo de vida (TTL) de 60 segundos[cite: 84].
+
+## Generacion de Graficos
+Una vez finalizados los experimentos, los resultados se almacenan en la carpeta metricas/. Para generar las comparativas visuales:
+1. Instalar librerias necesarias:
+   pip install pandas matplotlib numpy
+2. Ejecutar el generador:
+   python3 generar_graficos.py
+
+Se crearan graficos de Hit Rate comparativo, latencias promedio y tablas resumen en formato imagen[cite: 94, 132, 169].
+
+## Consultas (Q1-Q5)
+- Q1 Conteo de edificios: count:{zona_id}:conf={confidence_min}[cite: 55, 56].
+- Q2 Area promedio y total: area:{zona_id}:conf={confidence_min}[cite: 57, 58].
+- Q3 Densidad: density:{zona_id}:conf={confidence_min}[cite: 59, 60].
+- Q4 Comparacion entre zonas: compare:density:{zona_a}:{zona_b}:conf={confidence_min}[cite: 61, 62].
+- Q5 Distribucion de confianza: confidence_dist:{zona_id}:bins={bins}[cite: 63, 64].
+
+## Zonas Geograficas
+- Z1: Providencia
+- Z2: Las Condes
+- Z3: Maipu
+- Z4: Santiago Centro
+- Z5: Pudahuel
